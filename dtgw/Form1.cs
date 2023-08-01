@@ -25,12 +25,12 @@ namespace dtgw
                     rakim[i, j] = null;
                 }
             }
-            for (int i = 0; i < rakim.GetLength(1); i++)// for döngüsü ile columnlarına ekledik 
+            for (int i = 0; i < rakim.GetLength(1); i++)// for döngüsü ile sütunlarına ekledik 
             {
                 dataGridView1.Columns.Add($"{i}", $"{i + 1}");
             }
 
-            for (int i = 0; i < rakim.GetLength(0); i++) // rowlarına ekledik
+            for (int i = 0; i < rakim.GetLength(0); i++) // satırlarına ekledik
             {
                 DataGridViewRow row = new DataGridViewRow();
 
@@ -108,7 +108,7 @@ namespace dtgw
 
             while (sıra.Count > 0) //Sırada gezilecek hücreler olduğu sürece devam eder.
             {
-                DataGridViewCell currentCell = sıra.Dequeue(); //Kuruğun önünden bir hücre alınır ve currentCell değişkene atanır.
+                DataGridViewCell currentCell = sıra.Dequeue(); //Kuyruğun önünden bir hücre alınır ve currentCell değişkene atanır.
                 if (currentCell == destinationCell) //currentCell adlı hücrenin, hedef hücre (destinationCell) olduğunu kontrol eder.
                 { //Yol Bulunduğunda
                     List<DataGridViewCell> path = new List<DataGridViewCell>(); //path adında yeni bir liste oluşturduk. Bu liste, başlangıç hücresinden hedef hücreye olan yolun hücrelerini tutacak
@@ -116,12 +116,12 @@ namespace dtgw
 
                     while (node != startCell) //node hücresi başlangıç hücresine ulaşana kadar devam eder.
                     {
-                        path.Add(node); //satırı, geçici node hücresini path listesine ekler.
+                        path.Add(node); //geçici node hücresini path listesine ekler.
                         node = rota[node]; //node hücresini rotada takip edilen bir sonraki hücreye yönlendirir.
                     }
 
                     path.Add(startCell); //başlangıç hücresini path listesine ekler
-                    path.Reverse(); //path listesindeki hücreleri tersine çevirir. Çünkü yol başlangıçtan hedefe doğru oluşturulmuşyu ve sonucun başlangıçtan hedefe sıralı olması beklenir
+                    path.Reverse(); //path listesindeki hücreleri tersine çevirir. Çünkü yol başlangıçtan hedefe doğru oluşturulmuştu ve sonucun başlangıçtan hedefe sıralı olması beklenir
 
                     return path; //elde edilen yolun listesini fonksiyon çağrısının sonucu olarak döndürür.
                 }
@@ -133,12 +133,12 @@ namespace dtgw
                 int[] dc = { 0, 0, -1, 1, 1, 1, -1, -1 }; // Sütun hücresinin eksenlerini belirledik.
 
                 DataGridViewCell nextCell = null; //nextCell adında varsayılan değeri null olan bir değişken tanımladık. Bu değişken en uygun komşu hücrenin referansını tutacak.
-                int minCellValue = int.MaxValue; //Başlangıçta en büyük int değeri olan MaxCalue değeri ile atanan minCellValue adında değişken tanımladık. 
+                int minCellValue = int.MaxValue; //Başlangıçta en büyük int değeri olan MaxValue değeri ile atanan minCellValue adında değişken tanımladık. 
 
                 for (int i = 0; i < 8; i++) //For döngüsü ile bir hücrenin 8 yöndeki komşularını gezinmeyi sağlar.
                 {
                     int newRow = currentRow + dr[i]; //newRow şu anki gezilen hücrenin satır indeksine dr[i] değerini ekleyerek yeni bir satır indeksi oluşturur.
-                    int newCol = currentCol + dc[i]; //newCol şu anki gezilen gücrenin sütun indeksine dc[i] değerini ekleyerek yeni bir sütun indeksi oluşturur.
+                    int newCol = currentCol + dc[i]; //newCol şu anki gezilen hücrenin sütun indeksine dc[i] değerini ekleyerek yeni bir sütun indeksi oluşturur.
 
                     if (IsValidCell(newRow, newCol) && !gezilen.Contains(dataGridView1.Rows[newRow].Cells[newCol])) //Bu if koşulu, yeni oluşturulan satır ve sütun indekslerinin geçerli bir hücre konumunu temsil ettiğini ve daha önce ziyaret edilmemiş (gezilen kümesinde olmadığını) kontrol eder.
                     {
@@ -164,7 +164,7 @@ namespace dtgw
 
             return new List<DataGridViewCell>(); //fonksiyonun sonucunu döndürdük.
         }
-        private bool IsValidCell(int row, int col) //satur ve sütun indekslerinin dtgw kontrolünün sınırları içinde geçerli bir hücre konumu olup olmadığını kontrol eden IsValidCell fonksiyonu tanımladık.
+        private bool IsValidCell(int row, int col) //satrr ve sütun indekslerinin dtgw kontrolünün sınırları içinde geçerli bir hücre konumu olup olmadığını kontrol eden IsValidCell fonksiyonu tanımladık.
         {
             return row >= 0 && row < dataGridView1.Rows.Count && col >= 0 && col < dataGridView1.Columns.Count; 
         }
