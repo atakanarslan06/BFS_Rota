@@ -97,7 +97,7 @@ namespace dtgw
             dataGridView1.CellClick += DataGridView1_CellClick; //Hücrelere tıklamak için tanımlandı
 
         }
-        private List<DataGridViewCell> YolBulBFS(int?[,] rakim, DataGridViewCell startCell, DataGridViewCell destinationCell) //YolBulBFS adında liste döndüren bir fonksiyon tanımladık.
+        private List<DataGridViewCell> YolBulBFS(int?[,] rakim, DataGridViewCell startCell, DataGridViewCell destinationCell, TreeView treeView) //YolBulBFS adında liste döndüren bir fonksiyon tanımladık.
         {
             Queue<DataGridViewCell> sıra = new Queue<DataGridViewCell>(); //Hücreleri içeren kuyruk oluşturduk
             Dictionary<DataGridViewCell, DataGridViewCell> rota = new Dictionary<DataGridViewCell, DataGridViewCell>(); //Hücreler arası ilişkiyi tuttuk. Anahtar, bir hücreyi temsil ederken, değer, o hücreye ulaşmak için takip edilecek diğer hücreyi temsil eder.
@@ -122,6 +122,18 @@ namespace dtgw
 
                     path.Add(startCell); //başlangıç hücresini path listesine ekler
                     path.Reverse(); //path listesindeki hücreleri tersine çevirir. Çünkü yol başlangıçtan hedefe doğru oluşturulmuştu ve sonucun başlangıçtan hedefe sıralı olması beklenir
+
+                    TreeNode rootNode = new TreeNode("Gezilen Hücreler");
+                    treeView.Nodes.Clear();
+                    treeView.Nodes.Add(rootNode);
+
+                    foreach (DataGridViewCell cell in path)
+                    {
+                        string cellValue = cell.Value != null ? cell.Value.ToString() : "Null";
+                        TreeNode cellNode = new TreeNode($"Cell: {cell.RowIndex}, {cell.ColumnIndex}, Value: {cellValue}");
+                        rootNode.Nodes.Add(cellNode);
+                    }
+
 
                     return path; //elde edilen yolun listesini fonksiyon çağrısının sonucu olarak döndürür.
                 }
@@ -194,7 +206,7 @@ namespace dtgw
                     string message = "Varış noktanız: " + varisNoktasiCell.Value.ToString();
                     MessageBox.Show(message, "Varış Noktası", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    List<DataGridViewCell> yol = YolBulBFS(rakim, baslangicNoktasiCell, varisNoktasiCell); //BFS algoritması yol adında liste oluşturduk.
+                    List<DataGridViewCell> yol = YolBulBFS(rakim, baslangicNoktasiCell, varisNoktasiCell, treeView1); //BFS algoritması yol adında liste oluşturduk.
 
                     if (yol.Count > 0) //Yol uzunluğu 0 dan büyük olduğu durumda foreach ile hücreleri gezip gezilen hücreleri gri ile boyadık
                     {
