@@ -123,13 +123,13 @@ namespace dtgw
                     path.Add(startCell); //başlangıç hücresini path listesine ekler
                     path.Reverse(); //path listesindeki hücreleri tersine çevirir. Çünkü yol başlangıçtan hedefe doğru oluşturulmuştu ve sonucun başlangıçtan hedefe sıralı olması beklenir
 
-                    TreeNode rootNode = new TreeNode("Gezilen Hücreler");
-                    treeView.Nodes.Clear();
-                    treeView.Nodes.Add(rootNode);
+                    TreeNode rootNode = new TreeNode("Gezilen Hücreler"); //"Gezilen Hücreler" metni ile yeni bir TreeNode oluşturduk.
+                    treeView.Nodes.Clear(); //Yeniden başlamak ve sadece mevcut yolu görüntülemek için temizleriz.
+                    treeView.Nodes.Add(rootNode); //rootNode, TreeView kontrolüne eklenir. Bu, oluşturacağımız ağacın kökü olur.
 
                     foreach (DataGridViewCell cell in path)
                     {
-                        string cellValue = cell.Value != null ? cell.Value.ToString() : "Null";
+                        string cellValue = cell.Value != null ? cell.Value.ToString() : "Null"; 
                         TreeNode cellNode = new TreeNode($"Cell: {cell.RowIndex}, {cell.ColumnIndex}, Value: {cellValue}");
                         rootNode.Nodes.Add(cellNode);
                     }
