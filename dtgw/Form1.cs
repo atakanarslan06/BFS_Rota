@@ -173,17 +173,29 @@ namespace dtgw
                 int[] dr = { -1, 1, 0, 0, 1, -1, -1, 1 };  // Satır hücresinin eksenlerini belirledik.
                 int[] dc = { 0, 0, -1, 1, 1, 1, -1, -1 }; // Sütun hücresinin eksenlerini belirledik.
 
-                for (int i = 0; i < 8; i++)
+                for (int i = 0; i < 8; i++)//hücrenin 8 komsusunu dolaşıyoruz
                 {
                     int newRow = currentRow + dr[i];
+                    //dr ve dc adlı diziler, mevcut hücrenin komşu hücrelere göre satır ve sütun değişimlerini belirlemek için kullanılır
                     int newCol = currentCol + dc[i];
 
+                    //hesaplanan komşu hücrenin geçerli bir hücre olup olmadığını kontrol ediyoruz
                     if (IsValidCell(newRow, newCol) && !gezilen.Contains(dataGridView1.Rows[newRow].Cells[newCol]))
                     {
-                        DataGridViewCell neighborCell = dataGridView1.Rows[newRow].Cells[newCol];
+                        DataGridViewCell neighborCell = dataGridView1.Rows[newRow].Cells[newCol];//komsu hücre tanımladık
+
                         if (neighborCell.Value != null && int.TryParse(neighborCell.Value.ToString(), out int neighborCellValue))
                         {
-                            int totalCost = current.Cost + neighborCellValue;
+                            int totalCost = current.Cost + neighborCellValue;//mevcut hücreye gelene kadar olan maliyete, komşu hücrenin maliyetini ekliyoruz.
+
+                            /* 
+                             ----Aşağıdaki İf Özeti----
+                              Komşu hücre daha önce ziyaret edilmemişse veya toplam maliyet
+                              maliyet sözlüğünde komşu hücre için saklanan maliyetten daha düşükse
+                              bu durumda yeni bir yol bulduk demektir. Yeni maliyeti maliyet sözlüğünde güncelliyoruz,
+                              komşu hücreyi sıra listesine ve gezilen kümesine ekliyoruz ve aynı zamanda rota sözlüğünde
+                              komşu hücrenin önceki hücre olarak current.Cell'i (mevcut hücreyi) kaydediyoruz.
+                             */
                             if (!maliyet.ContainsKey(neighborCell) || totalCost < maliyet[neighborCell])
                             {
                                 maliyet[neighborCell] = totalCost;
