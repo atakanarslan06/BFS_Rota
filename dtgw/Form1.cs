@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 
@@ -98,35 +99,45 @@ namespace dtgw
             dataGridView1.CellClick += DataGridView1_CellClick; //Hücrelere tıklamak için tanımlandı
 
         }
-        private List<DataGridViewCell> YolBulBFS(int?[,] rakim, DataGridViewCell startCell, DataGridViewCell destinationCell, TreeView treeView) //YolBulBFS adında liste döndüren bir fonksiyon tanımladık.
+        public class CellWithCost
         {
-            Queue<DataGridViewCell> sıra = new Queue<DataGridViewCell>(); //Hücreleri içeren kuyruk oluşturduk
-            Dictionary<DataGridViewCell, DataGridViewCell> rota = new Dictionary<DataGridViewCell, DataGridViewCell>(); //Hücreler arası ilişkiyi tuttuk. Anahtar, bir hücreyi temsil ederken, değer, o hücreye ulaşmak için takip edilecek diğer hücreyi temsil eder.
-            HashSet<DataGridViewCell> gezilen = new HashSet<DataGridViewCell>(); //Daha önce ziyaret edilen hücreleri takip etmek için kullanılacak.
+            public DataGridViewCell Cell { get; set; } 
+            public int Cost { get; set; }
+        }
+        private List<DataGridViewCell> YolBulAStar(int?[,] rakim, DataGridViewCell startCell, DataGridViewCell destinationCell, TreeView treeView)
+        {
+            List<CellWithCost> sıra = new List<CellWithCost>();
+            Dictionary<DataGridViewCell, int> maliyet = new Dictionary<DataGridViewCell, int>();
+            Dictionary<DataGridViewCell, DataGridViewCell> rota = new Dictionary<DataGridViewCell, DataGridViewCell>();
+            HashSet<DataGridViewCell> gezilen = new HashSet<DataGridViewCell>();
 
-            sıra.Enqueue(startCell); //Başlangıç hücresini sıraya ekler
-            gezilen.Add(startCell); //Gezilen kümesinde olmayan yeni hücreleri ziyaret eder.
+            maliyet[startCell] = 0;
+            sıra.Add(new CellWithCost { Cell = startCell, Cost = 0 });
+            gezilen.Add(startCell);
 
-            while (sıra.Count > 0) //Sırada gezilecek hücreler olduğu sürece devam eder.
+            while (sıra.Count > 0)
             {
-                DataGridViewCell currentCell = sıra.Dequeue(); //Kuyruğun önünden bir hücre alınır ve currentCell değişkene atanır.
-                if (currentCell == destinationCell) //currentCell adlı hücrenin, hedef hücre (destinationCell) olduğunu kontrol eder.
-                { //Yol Bulunduğunda
-                    List<DataGridViewCell> path = new List<DataGridViewCell>(); //path adında yeni bir liste oluşturduk. Bu liste, başlangıç hücresinden hedef hücreye olan yolun hücrelerini tutacak
-                    DataGridViewCell node = destinationCell; //node(düğüm) adlı geçici hücre değişkenine hedef hücreyi atar.
+                sıra = sıra.OrderBy(c => c.Cost + TahminEdiciMaliyet(c.Cell, destinationCell)).ToList();
+                CellWithCost current = sıra[0];
+                sıra.RemoveAt(0);
 
-                    while (node != startCell) //node hücresi başlangıç hücresine ulaşana kadar devam eder.
+                if (current.Cell == destinationCell)
+                {
+                    List<DataGridViewCell> path = new List<DataGridViewCell>();
+                    DataGridViewCell node = destinationCell;
+
+                    while (node != startCell)
                     {
-                        path.Add(node); //geçici node hücresini path listesine ekler.
-                        node = rota[node]; //node hücresini rotada takip edilen bir sonraki hücreye yönlendirir.
+                        path.Add(node);
+                        node = rota[node];
                     }
 
-                    path.Add(startCell); //başlangıç hücresini path listesine ekler
-                    path.Reverse(); //path listesindeki hücreleri tersine çevirir. Çünkü yol başlangıçtan hedefe doğru oluşturulmuştu ve sonucun başlangıçtan hedefe sıralı olması beklenir
+                    path.Add(startCell);
+                    path.Reverse();
 
-                    TreeNode rootNode = new TreeNode("Gezilen Hücreler"); //"Gezilen Hücreler" metni ile yeni bir TreeNode oluşturduk.
-                    treeView.Nodes.Clear(); //Yeniden başlamak ve sadece mevcut yolu görüntülemek için temizleriz.
-                    treeView.Nodes.Add(rootNode); //rootNode, TreeView kontrolüne eklenir. Bu, oluşturacağımız ağacın kökü olur.
+                    treeView.Nodes.Clear();
+                    TreeNode rootNode = new TreeNode("Gezilen Hücreler");
+                    treeView.Nodes.Add(rootNode);
 
                     foreach (DataGridViewCell cell in path)
                     {
@@ -135,49 +146,50 @@ namespace dtgw
                         rootNode.Nodes.Add(cellNode);
                     }
 
-
-                    return path; //elde edilen yolun listesini fonksiyon çağrısının sonucu olarak döndürür.
+                    return path;
                 }
 
-                int currentRow = currentCell.RowIndex; //Seçili satırın seçili indexi
-                int currentCol = currentCell.ColumnIndex; //Seçili sütun seçili indexi
+                int currentRow = current.Cell.RowIndex;
+                int currentCol = current.Cell.ColumnIndex;
 
-                int[] dr = { -1, 1, 0, 0, 1, -1, -1, 1 }; // Satır hücresinin eksenlerini belirledik.
-                int[] dc = { 0, 0, -1, 1, 1, 1, -1, -1 }; // Sütun hücresinin eksenlerini belirledik.
+                int[] dr = { -1, 1, 0, 0, 1, -1, -1, 1 };
+                int[] dc = { 0, 0, -1, 1, 1, 1, -1, -1 };
 
-                DataGridViewCell nextCell = null; //nextCell adında varsayılan değeri null olan bir değişken tanımladık. Bu değişken en uygun komşu hücrenin referansını tutacak.
-                int minCellValue = int.MaxValue; //Başlangıçta en büyük int değeri olan MaxValue değeri ile atanan minCellValue adında değişken tanımladık. 
-
-                for (int i = 0; i < 8; i++) //For döngüsü ile bir hücrenin 8 yöndeki komşularını gezinmeyi sağlar.
+                for (int i = 0; i < 8; i++)
                 {
-                    int newRow = currentRow + dr[i]; //newRow şu anki gezilen hücrenin satır indeksine dr[i] değerini ekleyerek yeni bir satır indeksi oluşturur.
-                    int newCol = currentCol + dc[i]; //newCol şu anki gezilen hücrenin sütun indeksine dc[i] değerini ekleyerek yeni bir sütun indeksi oluşturur.
+                    int newRow = currentRow + dr[i];
+                    int newCol = currentCol + dc[i];
 
-                    if (IsValidCell(newRow, newCol) && !gezilen.Contains(dataGridView1.Rows[newRow].Cells[newCol])) //Bu if koşulu, yeni oluşturulan satır ve sütun indekslerinin geçerli bir hücre konumunu temsil ettiğini ve daha önce ziyaret edilmemiş (gezilen kümesinde olmadığını) kontrol eder.
+                    if (IsValidCell(newRow, newCol) && !gezilen.Contains(dataGridView1.Rows[newRow].Cells[newCol]))
                     {
-                        DataGridViewCell neighborCell = dataGridView1.Rows[newRow].Cells[newCol]; //Yeni konumdaki komşu hücrenin referansını alır.
-                        if (neighborCell.Value != null && int.TryParse(neighborCell.Value.ToString(), out int neighborCellValue)) // Bu if koşulu, komşu hücrenin değerinin null olmadığını ve int türüne dönüştürülebileceğini kontrol eder.
+                        DataGridViewCell neighborCell = dataGridView1.Rows[newRow].Cells[newCol];
+                        if (neighborCell.Value != null && int.TryParse(neighborCell.Value.ToString(), out int neighborCellValue))
                         {
-                            if (neighborCellValue < minCellValue) //komşu hücrenin değeri daha önce bulunan en küçük değerden daha küçükse devreye girer
+                            int totalCost = current.Cost + neighborCellValue;
+                            if (!maliyet.ContainsKey(neighborCell) || totalCost < maliyet[neighborCell])
                             {
-                                minCellValue = neighborCellValue; //Eğer komşu hücrenin değeri, daha önce bulunan en küçük değerden daha küçükse, bu değeri minCellValue olarak günceller.
-                                nextCell = neighborCell; //En küçük değeri taşıyan komşu hücreyi nextCell değişkenine atar. Böylece nextCell, şu anki gezilen hücreye en küçük değeri olan komşu hücrenin referansını tutar.
+                                maliyet[neighborCell] = totalCost;
+                                sıra.Add(new CellWithCost { Cell = neighborCell, Cost = totalCost });
+                                gezilen.Add(neighborCell);
+                                rota[neighborCell] = current.Cell;
                             }
                         }
                     }
                 }
-
-                if (nextCell != null) //nextCell değişkeninin null olup olmadığını kontrol eder
-                {
-                    sıra.Enqueue(nextCell); //nextCell adlı en uygun komşu hücreyi sıra adlı kuyruğa ekler
-                    gezilen.Add(nextCell); //gezilen adlı küme içine nextCell hücresini ekler.
-                    rota[nextCell] = currentCell; //rota adlı sözlük içine bir çift (key-value) ekler. nextCell, anahtar olarak kullanılırken, currentCell ise değer olarak kullanılır. Bu işlem, nextCell hücresine ulaşmak için currentCell hücresinin kullanılacağını belirtir. Yani, nextCell hücresine nasıl ulaşıldığı bu sözlük üzerinde tutulur.
-                }
             }
 
-            return new List<DataGridViewCell>(); //fonksiyonun sonucunu döndürdük.
+            return new List<DataGridViewCell>();
         }
-        private bool IsValidCell(int row, int col) //satrr ve sütun indekslerinin dtgw kontrolünün sınırları içinde geçerli bir hücre konumu olup olmadığını kontrol eden IsValidCell fonksiyonu tanımladık.
+        private int TahminEdiciMaliyet(DataGridViewCell hedefCell, DataGridViewCell destinationCell)
+        {
+            int hedefSatir = hedefCell.RowIndex;
+            int hedefSutun = hedefCell.ColumnIndex;
+            int hedefSatirIndex = destinationCell.RowIndex;
+            int hedefSutunIndex = destinationCell.ColumnIndex;
+
+            return Math.Abs(hedefSatirIndex - hedefSatir) + Math.Abs(hedefSutunIndex - hedefSutun);
+        }
+        public bool IsValidCell(int row, int col) //satrr ve sütun indekslerinin dtgw kontrolünün sınırları içinde geçerli bir hücre konumu olup olmadığını kontrol eden IsValidCell fonksiyonu tanımladık.
         {
             return row >= 0 && row < dataGridView1.Rows.Count && col >= 0 && col < dataGridView1.Columns.Count;
         }
@@ -207,7 +219,7 @@ namespace dtgw
                     string message = "Varış noktanız: " + varisNoktasiCell.Value.ToString();
                     MessageBox.Show(message, "Varış Noktası", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    List<DataGridViewCell> yol = YolBulBFS(rakim, baslangicNoktasiCell, varisNoktasiCell, treeView1); //BFS algoritması yol adında liste oluşturduk.
+                    List<DataGridViewCell> yol = YolBulAStar(rakim, baslangicNoktasiCell, varisNoktasiCell, treeView1); //BFS algoritması yol adında liste oluşturduk.
 
                     if (yol.Count > 0) //Yol uzunluğu 0 dan büyük olduğu durumda foreach ile hücreleri gezip gezilen hücreleri gri ile boyadık
                     {
