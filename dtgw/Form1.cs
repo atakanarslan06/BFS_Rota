@@ -99,22 +99,30 @@ namespace dtgw
             dataGridView1.CellClick += DataGridView1_CellClick; //Hücrelere tıklamak için tanımlandı
 
         }
-        public class CellWithCost
+        public class CellWithCost //Hücreyi ve o hücreye ulaşmak için ödenecek maliyeti temsil eder.
         {
             public DataGridViewCell Cell { get; set; } 
             public int Cost { get; set; }
         }
         private List<DataGridViewCell> YolBulAStar(int?[,] rakim, DataGridViewCell startCell, DataGridViewCell destinationCell, TreeView treeView)
         {
+            //liste, hücrelerin maliyetleriyle birlikte sıralanmış bir sıra içinde tutulacak. 
             List<CellWithCost> sıra = new List<CellWithCost>();
+
+            //her hücre için toplam maliyetin saklanacacağını belirttik.
             Dictionary<DataGridViewCell, int> maliyet = new Dictionary<DataGridViewCell, int>();
+
+            //her hücre için en kısa yolda bir önceki hücrenin saklanacağını belirttik.
             Dictionary<DataGridViewCell, DataGridViewCell> rota = new Dictionary<DataGridViewCell, DataGridViewCell>();
+
+            //ziyaret edilen hücreleri takip etmek için kullanılacak hashsetimizi tanımladık.
             HashSet<DataGridViewCell> gezilen = new HashSet<DataGridViewCell>();
 
             maliyet[startCell] = 0;
             sıra.Add(new CellWithCost { Cell = startCell, Cost = 0 });
             gezilen.Add(startCell);
 
+            // Bu döngü, sıra listesindeki hücrelerin maliyetlerine göre sıralanmasını ve hedef hücreye olan tahmini maliyetlerine göre en uygun hücrenin seçilmesini sağlar.
             while (sıra.Count > 0)
             {
                 sıra = sıra.OrderBy(c => c.Cost + TahminEdiciMaliyet(c.Cell, destinationCell)).ToList();
@@ -123,20 +131,30 @@ namespace dtgw
 
                 if (current.Cell == destinationCell)
                 {
+                    //path adında yeni bir liste oluşturduk. Bu liste, başlangıç hücresinden hedef hücreye olan yolun hücrelerini tutacak
                     List<DataGridViewCell> path = new List<DataGridViewCell>();
+
+                    //node(düğüm) adlı geçici hücre değişkenine hedef hücreyi atar.
                     DataGridViewCell node = destinationCell;
 
+                    //node hücresi başlangıç hücresine ulaşana kadar devam eder.
                     while (node != startCell)
                     {
-                        path.Add(node);
-                        node = rota[node];
+                        path.Add(node); //geçici node hücresini path listesine ekler.
+                        node = rota[node]; //node hücresini rotada takip edilen bir sonraki hücreye yönlendirir.
                     }
 
-                    path.Add(startCell);
+                    path.Add(startCell); //başlangıç hücresini path listesine ekler
+                    //path listesindeki hücreleri tersine çevirir. Çünkü yol başlangıçtan hedefe doğru oluşturulmuştu ve sonucun başlangıçtan hedefe sıralı olması beklenir
                     path.Reverse();
 
+                    //"Gezilen Hücreler" metni ile yeni bir TreeNode oluşturduk.
                     treeView.Nodes.Clear();
+
+                    //Yeniden başlamak ve sadece mevcut yolu görüntülemek için temizleriz.
                     TreeNode rootNode = new TreeNode("Gezilen Hücreler");
+
+                    //rootNode, TreeView kontrolüne eklenir. Bu, oluşturacağımız ağacın kökü olur.
                     treeView.Nodes.Add(rootNode);
 
                     foreach (DataGridViewCell cell in path)
@@ -146,14 +164,14 @@ namespace dtgw
                         rootNode.Nodes.Add(cellNode);
                     }
 
-                    return path;
+                    return path;//elde edilen yolun listesini fonksiyon çağrısının sonucu olarak döndürür.
                 }
 
-                int currentRow = current.Cell.RowIndex;
-                int currentCol = current.Cell.ColumnIndex;
+                int currentRow = current.Cell.RowIndex; //Seçili satırın seçili indexi
+                int currentCol = current.Cell.ColumnIndex; //Seçili sütun seçili indexi
 
-                int[] dr = { -1, 1, 0, 0, 1, -1, -1, 1 };
-                int[] dc = { 0, 0, -1, 1, 1, 1, -1, -1 };
+                int[] dr = { -1, 1, 0, 0, 1, -1, -1, 1 };  // Satır hücresinin eksenlerini belirledik.
+                int[] dc = { 0, 0, -1, 1, 1, 1, -1, -1 }; // Sütun hücresinin eksenlerini belirledik.
 
                 for (int i = 0; i < 8; i++)
                 {
@@ -180,14 +198,19 @@ namespace dtgw
 
             return new List<DataGridViewCell>();
         }
-        private int TahminEdiciMaliyet(DataGridViewCell hedefCell, DataGridViewCell destinationCell)
+        private int TahminEdiciMaliyet(DataGridViewCell hedefCell, DataGridViewCell destinationCell) //Hücrenin hedef hücreye olan tahmini maliyeti hesaplar
         {
-            int hedefSatir = hedefCell.RowIndex;
+            // Hedef hücrenin satır ve sütun indekslerini alır.
+            int hedefSatir = hedefCell.RowIndex;  
             int hedefSutun = hedefCell.ColumnIndex;
+
+            // Hedef hücreye olan tahmini satır ve sütun indekslerini alır.
             int hedefSatirIndex = destinationCell.RowIndex;
             int hedefSutunIndex = destinationCell.ColumnIndex;
 
+            //hedef hücrenin satır indeksi ile hedef hücreye olan tahmini satır indeksi arasındaki farkı ve hedef hücrenin sütun indeksi ile hedef hücreye olan tahmini sütun indeksi arasındaki farkı alırız.
             return Math.Abs(hedefSatirIndex - hedefSatir) + Math.Abs(hedefSutunIndex - hedefSutun);
+            //return satirfarkı + sutunfarkı
         }
         public bool IsValidCell(int row, int col) //satrr ve sütun indekslerinin dtgw kontrolünün sınırları içinde geçerli bir hücre konumu olup olmadığını kontrol eden IsValidCell fonksiyonu tanımladık.
         {
