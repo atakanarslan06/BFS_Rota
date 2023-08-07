@@ -10,6 +10,7 @@ namespace dtgw
 {
     public partial class Form1 : Form
     {
+        //readonly-> Bir kez başlatıldıktan sonra, değeri değiştirilemez ve başka bir yerde değişkenin değeri değiştirilemez.
         private readonly int?[,] rakim = new int?[20, 20]; // rakim adında 20x20 matris oluşturduk
         public Form1()
         {
@@ -19,9 +20,9 @@ namespace dtgw
 
         public void Form1_Load(object sender, EventArgs e)
         {
-            Random rnd = new Random(); //Matris içine random sayı atadık
+            Random rnd = new Random(); //Sayılara random değer verecek rnd adında parametre tanımladık.
             for (int i = 0; i < rakim.GetLength(0); i++)
-            {
+            { //GetLength(0) matrisin satır sayısını, GetLength(1) ise matrisin sütun sayısını verir
                 for (int j = 0; j < rakim.GetLength(1); j++)
                 {
                     rakim[i, j] = null;
@@ -99,11 +100,13 @@ namespace dtgw
             dataGridView1.CellClick += DataGridView1_CellClick; //Hücrelere tıklamak için tanımlandı
 
         }
+
         public class CellWithCost //Hücreyi ve o hücreye ulaşmak için ödenecek maliyeti temsil eder.
         {
             public DataGridViewCell Cell { get; set; } 
             public int Cost { get; set; }
         }
+
         private List<DataGridViewCell> YolBulAStar(int?[,] rakim, DataGridViewCell startCell, DataGridViewCell destinationCell, TreeView treeView)
         {
             //liste, hücrelerin maliyetleriyle birlikte sıralanmış bir sıra içinde tutulacak. 
