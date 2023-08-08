@@ -128,7 +128,7 @@ namespace dtgw
             // Bu döngü, sıra listesindeki hücrelerin maliyetlerine göre sıralanmasını ve hedef hücreye olan tahmini maliyetlerine göre en uygun hücrenin seçilmesini sağlar.
             while (sıra.Count > 0)
             {
-                sıra = sıra.OrderBy(c => c.Cost + TahminEdiciMaliyet(c.Cell, destinationCell)).ToList();
+                sıra = sıra.OrderBy(c => c.Cost + MaliyetTahminEdici(c.Cell, destinationCell)).ToList();
                 CellWithCost current = sıra[0];
                 sıra.RemoveAt(0);
 
@@ -213,7 +213,7 @@ namespace dtgw
 
             return new List<DataGridViewCell>();
         }
-        private int TahminEdiciMaliyet(DataGridViewCell hedefCell, DataGridViewCell destinationCell) //Hücrenin hedef hücreye olan tahmini maliyeti hesaplar
+        private int MaliyetTahminEdici(DataGridViewCell hedefCell, DataGridViewCell destinationCell) //Hücrenin hedef hücreye olan tahmini maliyeti hesaplar
         {
             // Hedef hücrenin satır ve sütun indekslerini alır.
             int hedefSatir = hedefCell.RowIndex;  
