@@ -42,12 +42,12 @@ namespace dtgw
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowHeadersWidth = 51;
             this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(829, 688);
+            this.dataGridView1.Size = new System.Drawing.Size(1016, 688);
             this.dataGridView1.TabIndex = 0;
             // 
             // treeView1
             // 
-            this.treeView1.Location = new System.Drawing.Point(869, 12);
+            this.treeView1.Location = new System.Drawing.Point(1049, 12);
             this.treeView1.Name = "treeView1";
             this.treeView1.Size = new System.Drawing.Size(433, 688);
             this.treeView1.TabIndex = 1;
